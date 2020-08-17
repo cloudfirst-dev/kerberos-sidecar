@@ -12,10 +12,12 @@ public class MyResourceTest {
     @Test
     public void testHelloEndpoint() {
         given()
-          .when().get("/hello")
+          .when()
+          .header("X-Remote-User", "my name")
+          .get("/hi")
           .then()
              .statusCode(200)
-             .body(is("hello"));
+             .body(is("my name"));
     }
 
 }
