@@ -1,0 +1,67 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: {{ include "helm.fullname" . }}
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: Recreate
+    recreateParams:
+      timeoutSeconds: 600
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - sso-proxy
+        from:
+          kind: ImageStreamTag
+          name: 'sso-proxy:latest'
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - sample-app
+        from:
+          kind: ImageStreamTag
+          name: 'sample-app:latest'
+    - type: ConfigChange
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 10
+  selector:
+    {{- include "helm.selectorLabels" . | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "helm.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "helm.serviceAccountName" . }}
+      volumes:
+        - name: krb5
+          secret:
+            secretName: keytab
+            defaultMode: 420
+      containers:
+        - name: sso-proxy
+          image: ' '
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: krb5
+              readOnly: true
+              mountPath: /etc/httpd/krb5.keytab
+              subPath: krb5.keytab
+        - name: sample-app
+          image: ' '
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: krb5
+              readOnly: true
+              mountPath: /etc/httpd/krb5.keytab
+              subPath: krb5.keytab

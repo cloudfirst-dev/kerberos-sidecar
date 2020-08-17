@@ -1,0 +1,21 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: sso-proxy
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'sso-proxy:latest'
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/cloudfirst-dev/kerberos-sidecar'
+    contextDir: /
+  runPolicy: Serial

@@ -1,0 +1,8 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: keytab
+data:
+  krb5.keytab: >-
+    {{ .Files.Get "files/krb5.keytab" | b64enc }}
+type: Opaque
